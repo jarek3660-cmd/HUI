@@ -1,66 +1,68 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date: 05/06/2026 01:49:35 PM
--- Design Name: 
--- Module Name: two_Dig_Disp - Behavioral
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
--- Description: 
--- 
--- Dependencies: 
--- 
--- Revision:
--- Revision 0.01 - File Created
--- Additional Comments:
--- 
-----------------------------------------------------------------------------------
-
-
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
-
 entity two_Dig_Disp is
-    Port ( Clk: in STD_LOGIC;
-           USB_Clk, USB_Data : in STD_LOGIC_VECTOR (3 downto 0);
-           Cathodes : out STD_LOGIC_VECTOR (7 downto 0));
+    Port (
+        clk        : in  STD_LOGIC;
+        digit_hi   : in  STD_LOGIC_VECTOR(3 downto 0);
+        digit_lo   : in  STD_LOGIC_VECTOR(3 downto 0);
+        an         : out STD_LOGIC_VECTOR(1 downto 0);
+        seg        : out STD_LOGIC_VECTOR(7 downto 0)
+    );
 end two_Dig_Disp;
 
 architecture Behavioral of two_Dig_Disp is
 
-component Frequency_Divider is
-    Port ( Clock_System : in STD_LOGIC;
-           Clock_1Hz : out STD_LOGIC);
-end component; 
+    component Frequency_Divider is
+        Port (
+            Clock_System : in  STD_LOGIC;
+            Clock_2ms    : out STD_LOGIC
+        );
+    end component;
 
-component hexDisp is
-  Port (clk : in STD_LOGIC;
-        input : in STD_LOGIC_VECTOR(3 downto 0);
-        Cathode_7SD, Anode_7SD : out STD_LOGIC_VECTOR(7 downto 0));
-end component;
+    component rom7seg is
+        Port (
+            addr : in  STD_LOGIC_VECTOR(3 downto 0);
+            seg  : out STD_LOGIC_VECTOR(7 downto 0)
+        );
+    end component;
 
-signal Slow_Clock : STD_LOGIC;
+    signal tick_2ms      : STD_LOGIC;
+    signal anode_state   : STD_LOGIC := '0';
+    signal current_digit : STD_LOGIC_VECTOR(3 downto 0);
 
 begin
 
-fd: Frequency_Divider Port Map ( Clock_System => Clk,
-           Clock_1Hz => Slow_Clock);
-sevenValues: hexDisp Port Map(Slow_Clock,
-                              USB_CLk,
-                              Cathodes);
+    u_div : Frequency_Divider
+        port map (
+            Clock_System => clk,
+            Clock_2ms    => tick_2ms
+        );
 
-sevenValues2: hexDisp Port Map(Slow_Clock,
-                              USB_Data,
-                              Cathodes);
+    process(clk)
+    begin
+        if rising_edge(clk) then
+            if tick_2ms = '1' then
+                anode_state <= not anode_state;
+            end if;
+        end if;
+    end process;
+
+    process(anode_state, digit_hi, digit_lo)
+    begin
+        if anode_state = '0' then
+            current_digit <= digit_lo;
+            an <= "10";
+        else
+            current_digit <= digit_hi;
+            an <= "01";
+        end if;
+    end process;
+
+    u_rom : rom7seg
+        port map (
+            addr => current_digit,
+            seg  => seg
+        );
+
 end Behavioral;
