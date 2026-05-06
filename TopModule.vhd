@@ -1,24 +1,24 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
-entity top is
+entity top_ProjectD is
     Port (
-        clk        : in  STD_LOGIC;
-        usb_clk    : in  STD_LOGIC;
-        usb_data   : in  STD_LOGIC;
-        an         : out STD_LOGIC_VECTOR(1 downto 0);
-        seg        : out STD_LOGIC_VECTOR(7 downto 0)
+        clk       : in  STD_LOGIC;
+        usb_clk   : in  STD_LOGIC;
+        usb_data  : in  STD_LOGIC;
+        an        : out STD_LOGIC_VECTOR(1 downto 0);
+        seg       : out STD_LOGIC_VECTOR(7 downto 0)
     );
 end top_ProjectD;
 
 architecture Behavioral of top_ProjectD is
 
-    component keyboard_ifc is
+    component UART is
         Port (
-            usb_clk  : in  STD_LOGIC;
-            usb_data : in  STD_LOGIC;
-            hex_hi   : out STD_LOGIC_VECTOR(3 downto 0);
-            hex_lo   : out STD_LOGIC_VECTOR(3 downto 0)
+            USB_CLK     : in STD_LOGIC;
+            USB_DATA    : in STD_LOGIC;
+            LowerHalf   : out STD_LOGIC_VECTOR(3 downto 0);
+            HigherHalf  : out STD_LOGIC_VECTOR(3 downto 0)
         );
     end component;
 
@@ -37,12 +37,12 @@ architecture Behavioral of top_ProjectD is
 
 begin
 
-    u_kbd : keyboard_ifc
+    u_uart : UART
         port map (
-            usb_clk  => usb_clk,
-            usb_data => usb_data,
-            hex_hi   => digit_hi,
-            hex_lo   => digit_lo
+            USB_CLK    => usb_clk,
+            USB_DATA   => usb_data,
+            LowerHalf  => digit_lo,
+            HigherHalf => digit_hi
         );
 
     u_disp : two_Dig_Disp
