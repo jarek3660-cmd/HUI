@@ -16,16 +16,20 @@ architecture Behavioral of two_Dig_Disp is
     component Frequency_Divider is
         Port (
             Clock_System : in  STD_LOGIC;
-            Clock_2ms    : out STD_LOGIC
+            Clock_1Hz    : out STD_LOGIC
         );
     end component;
 
-    component rom7seg is
+    component ROM is
         Port (
+            clka : IN STD_LOGIC;
+            ena : IN STD_LOGIC;
             addr : in  STD_LOGIC_VECTOR(3 downto 0);
             seg  : out STD_LOGIC_VECTOR(7 downto 0)
         );
     end component;
+    
+
 
     signal tick_2ms      : STD_LOGIC;
     signal anode_state   : STD_LOGIC := '0';
@@ -36,7 +40,7 @@ begin
     u_div : Frequency_Divider
         port map (
             Clock_System => clk,
-            Clock_2ms    => tick_2ms
+            Clock_1Hz    => tick_2ms
         );
 
     process(clk)
@@ -59,8 +63,9 @@ begin
         end if;
     end process;
 
-    u_rom : rom7seg
+    u_rom : ROM
         port map (
+            
             addr => current_digit,
             seg  => seg
         );
