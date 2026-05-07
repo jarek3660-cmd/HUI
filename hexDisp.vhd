@@ -21,7 +21,7 @@ architecture Behavioral of hexDisp is
 
 begin
 
-  sevenSegValues : ROM1
+  sevenSegValues : ROM
     port map (
       a    => input,
       clk  => clk,
