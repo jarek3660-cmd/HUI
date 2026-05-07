@@ -3,11 +3,11 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 entity two_Dig_Disp is
     Port (
-        clk        : in  STD_LOGIC;
-        digit_hi   : in  STD_LOGIC_VECTOR(3 downto 0);
-        digit_lo   : in  STD_LOGIC_VECTOR(3 downto 0);
-        an         : out STD_LOGIC_VECTOR(1 downto 0);
-        seg        : out STD_LOGIC_VECTOR(7 downto 0)
+        clk       : in  STD_LOGIC;
+        digit_hi  : in  STD_LOGIC_VECTOR(3 downto 0);
+        digit_lo  : in  STD_LOGIC_VECTOR(3 downto 0);
+        an        : out STD_LOGIC_VECTOR(1 downto 0);
+        seg       : out STD_LOGIC_VECTOR(7 downto 0)
     );
 end two_Dig_Disp;
 
@@ -16,20 +16,17 @@ architecture Behavioral of two_Dig_Disp is
     component Frequency_Divider is
         Port (
             Clock_System : in  STD_LOGIC;
-            Clock_1Hz    : out STD_LOGIC
+            Clock_2ms    : out STD_LOGIC
         );
     end component;
 
-    component ROM is
+    component hexDisp is
         Port (
-            clka : IN STD_LOGIC;
-            ena : IN STD_LOGIC;
-            addr : in  STD_LOGIC_VECTOR(3 downto 0);
-            seg  : out STD_LOGIC_VECTOR(7 downto 0)
+            clk   : in  STD_LOGIC;
+            input : in  STD_LOGIC_VECTOR(3 downto 0);
+            seg   : out STD_LOGIC_VECTOR(7 downto 0)
         );
     end component;
-    
-
 
     signal tick_2ms      : STD_LOGIC;
     signal anode_state   : STD_LOGIC := '0';
@@ -40,7 +37,7 @@ begin
     u_div : Frequency_Divider
         port map (
             Clock_System => clk,
-            Clock_1Hz    => tick_2ms
+            Clock_2ms    => tick_2ms
         );
 
     process(clk)
@@ -63,11 +60,11 @@ begin
         end if;
     end process;
 
-    u_rom : ROM
+    u_hex : hexDisp
         port map (
-            
-            addr => current_digit,
-            seg  => seg
+            clk   => clk,
+            input => current_digit,
+            seg   => seg
         );
 
 end Behavioral;
