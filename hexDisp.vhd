@@ -1,70 +1,62 @@
+----------------------------------------------------------------------------------
+-- Company: 
+-- Engineer: 
+-- 
+-- Create Date: 04/20/2026 01:29:07 PM
+-- Design Name: 
+-- Module Name: hexDisp - Behavioral
+-- Project Name: 
+-- Target Devices: 
+-- Tool Versions: 
+-- Description: 
+-- 
+-- Dependencies: 
+-- 
+-- Revision:
+-- Revision 0.01 - File Created
+-- Additional Comments:
+-- 
+----------------------------------------------------------------------------------
+
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
-entity two_Dig_Disp is
-    Port (
-        clk       : in  STD_LOGIC;
-        digit_hi  : in  STD_LOGIC_VECTOR(3 downto 0);
-        digit_lo  : in  STD_LOGIC_VECTOR(3 downto 0);
-        an        : out STD_LOGIC_VECTOR(1 downto 0);
-        seg       : out STD_LOGIC_VECTOR(7 downto 0)
-    );
-end two_Dig_Disp;
+-- Uncomment the following library declaration if using
+-- arithmetic functions with Signed or Unsigned values
+--use IEEE.NUMERIC_STD.ALL;
 
-architecture Behavioral of two_Dig_Disp is
+-- Uncomment the following library declaration if instantiating
+-- any Xilinx leaf cells in this code.
+library UNISIM;
+use UNISIM.VComponents.all;
 
-    component Frequency_Divider is
-        Port (
-            Clock_System : in  STD_LOGIC;
-            Clock_2ms    : out STD_LOGIC
-        );
-    end component;
+entity hexDisp is
+  Port (clk : in STD_LOGIC;
+        input : in STD_LOGIC_VECTOR(3 downto 0);
+        Cathode_7SD, Anode_7SD : out STD_LOGIC_VECTOR(7 downto 0));
+end hexDisp;
 
-    component hexDisp is
-        Port (
-            clk   : in  STD_LOGIC;
-            input : in  STD_LOGIC_VECTOR(3 downto 0);
-            seg   : out STD_LOGIC_VECTOR(7 downto 0)
-        );
-    end component;
+architecture Behavioral of hexDisp is
 
-    signal tick_2ms      : STD_LOGIC;
-    signal anode_state   : STD_LOGIC := '0';
-    signal current_digit : STD_LOGIC_VECTOR(3 downto 0);
 
+COMPONENT ROM1
+  PORT (
+    a : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
+    clk : IN STD_LOGIC;
+    qspo : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
+  );
+END COMPONENT;
+
+signal sevenSegCath : STD_LOGIC_VECTOR(7 downto 0);
 begin
 
-    u_div : Frequency_Divider
-        port map (
-            Clock_System => clk,
-            Clock_2ms    => tick_2ms
-        );
+sevenSegValues : ROM1 PORT MAP (
+    a => input,
+    clk => clk,
+    qspo => Cathode_7SD
+  );
 
-    process(clk)
-    begin
-        if rising_edge(clk) then
-            if tick_2ms = '1' then
-                anode_state <= not anode_state;
-            end if;
-        end if;
-    end process;
-
-    process(anode_state, digit_hi, digit_lo)
-    begin
-        if anode_state = '0' then
-            current_digit <= digit_lo;
-            an <= "10";
-        else
-            current_digit <= digit_hi;
-            an <= "01";
-        end if;
-    end process;
-
-    u_hex : hexDisp
-        port map (
-            clk   => clk,
-            input => current_digit,
-            seg   => seg
-        );
+Cathode_7SD <= sevenSegCath;
 
 end Behavioral;
